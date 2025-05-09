@@ -1,0 +1,20 @@
+{
+  "name": "proyecto-2do-parcial",
+  "version": "1.0.0",
+  "description": "Proyecto creado por Luis Roberto Esparza Carranza del octavo cuatrimestre en la universidad Privada del Estado de México\r Proyecto revisado por el profesor Ebner Juarez Elias",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Guicho96/Proyecto-2do-Parcial.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Guicho96/Proyecto-2do-Parcial/issues"
+  },
+  "homepage": "https://github.com/Guicho96/Proyecto-2do-Parcial#readme"
+}

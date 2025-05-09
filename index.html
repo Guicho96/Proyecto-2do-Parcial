@@ -1,11 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saludo</title>
+  <meta charset="UTF-8">
+  <title>Formulario de Registro</title>
 </head>
 <body>
-    <h1>¡Hola, bienvenido a mi página!</h1>
+  <h2>Formulario de Registro</h2>
+  <form action="/procesar" method="post">
+    <label for="nombres">Nombres:</label><br>
+    <input type="text" id="nombres" name="nombres" required><br><br>
+
+    <label for="apellidoPaterno">Apellido Paterno:</label><br>
+    <input type="text" id="apellidoPaterno" name="apellidoPaterno" required><br><br>
+
+    <label for="apellidoMaterno">Apellido Materno:</label><br>
+    <input type="text" id="apellidoMaterno" name="apellidoMaterno" required><br><br>
+
+    <label for="telefono">Teléfono:</label><br>
+    <input type="tel" id="telefono" name="telefono" pattern="[0-9]{10}" required>
+    <small>Formato: 10 dígitos</small><br><br>
+
+    <label for="correo">Correo Electrónico:</label><br>
+    <input type="email" id="correo" name="correo" required><br><br>
+
+    <button type="submit">Enviar</button>
+  </form>
 </body>
 </html>
