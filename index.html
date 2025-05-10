@@ -227,6 +227,52 @@
       font-style: italic;
       margin-top: 5px;
     }
+    
+    .location-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .location-buttons button {
+      flex: 1;
+      margin-top: 0;
+      padding: 8px;
+      font-size: 14px;
+    }
+    
+    #btnUbicacionActual {
+      background-color: #17a2b8;
+    }
+    
+    #btnUbicacionActual:hover {
+      background-color: #138496;
+    }
+    
+    .coordenadas-container {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border: 1px solid #dee2e6;
+    }
+    
+    .coordenadas-container label {
+      font-weight: bold;
+      color: #495057;
+    }
+    
+    .coordenadas-info {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    
+    .coordenadas-info input {
+      flex: 1;
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -273,6 +319,18 @@
       <div class="direccion-container">
         <div class="form-direccion">
           <form id="formDireccionForm">
+            <div class="location-buttons">
+              <button type="button" id="btnUbicacionActual">Usar mi ubicación actual</button>
+            </div>
+            
+            <div class="coordenadas-container">
+              <label>Coordenadas:</label>
+              <div class="coordenadas-info">
+                <input type="text" id="latitud" placeholder="Latitud" readonly>
+                <input type="text" id="longitud" placeholder="Longitud" readonly>
+              </div>
+            </div>
+
             <label for="calle">Calle:</label>
             <input type="text" id="calle" name="calle" required>
             <div id="loading-calle" class="loading">Buscando dirección...</div>
@@ -363,6 +421,9 @@
     const municipioInput = document.getElementById('municipio');
     const estadoSelect = document.getElementById('estado');
     const cpInput = document.getElementById('cp');
+    const btnUbicacionActual = document.getElementById('btnUbicacionActual');
+    const latitudInput = document.getElementById('latitud');
+    const longitudInput = document.getElementById('longitud');
 
     // Elementos de carga
     const loadingElements = {
@@ -392,6 +453,9 @@
         draggable: true
       }).addTo(map);
       
+      // Actualizar coordenadas al iniciar
+      updateCoordenadas(19.4326, -99.1332);
+      
       // Mostrar mensaje de carga cuando se empieza a arrastrar
       marker.on('dragstart', function() {
         showLoading(true);
@@ -400,8 +464,18 @@
       // Actualizar dirección cuando se suelta el marcador
       marker.on('dragend', function(e) {
         const position = marker.getLatLng();
+        updateCoordenadas(position.lat, position.lng);
         reverseGeocode(position.lat, position.lng);
       });
+      
+      // Configurar el botón de ubicación actual
+      btnUbicacionActual.addEventListener('click', getCurrentLocation);
+    }
+
+    // Función para actualizar las coordenadas en los campos
+    function updateCoordenadas(lat, lng) {
+      latitudInput.value = lat.toFixed(6);
+      longitudInput.value = lng.toFixed(6);
     }
 
     // Función para mostrar/ocultar los mensajes de carga
@@ -445,6 +519,38 @@
           showLoading(false);
           alert('No se pudo obtener la dirección. Por favor inténtalo de nuevo o completa los campos manualmente.');
         });
+    }
+    
+    // Función para obtener la ubicación actual del usuario
+    function getCurrentLocation() {
+      if (!navigator.geolocation) {
+        alert('La geolocalización no es soportada por tu navegador');
+        return;
+      }
+      
+      showLoading(true);
+      
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          
+          // Mover el marcador a la ubicación actual
+          marker.setLatLng([lat, lon]);
+          map.setView([lat, lon], 16);
+          
+          // Actualizar las coordenadas
+          updateCoordenadas(lat, lon);
+          
+          // Actualizar los campos del formulario
+          reverseGeocode(lat, lon);
+        },
+        error => {
+          showLoading(false);
+          alert('No se pudo obtener tu ubicación: ' + error.message);
+        },
+        { enableHighAccuracy: true }
+      );
     }
 
     // Inicializar el mapa cuando se muestra el formulario de dirección
@@ -492,7 +598,10 @@
             municipio: municipioInput.value,
             estado: estadoSelect.options[estadoSelect.selectedIndex].text,
             cp: cpInput.value,
-            coordenadas: marker.getLatLng()
+            coordenadas: {
+              latitud: latitudInput.value,
+              longitud: longitudInput.value
+            }
           }
         };
         console.log("Datos completos del registro:", datosRegistro);
@@ -508,6 +617,5 @@
       // window.location.href = 'pagina_de_gracias.html';
     });
   </script>
-
 </body>
 </html>
