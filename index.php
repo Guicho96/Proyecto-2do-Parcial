@@ -1,6 +1,6 @@
 <?php
 $servername = "localhost";
-$username = "usuario";
+$username = "user";
 $password = "";
 $database = "proyecto-2do-parcial";
 
