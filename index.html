@@ -3,85 +3,511 @@
 <head>
   <meta charset="UTF-8">
   <title>Formulario de Registro</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background-color: #000000; /* Fondo negro */
-      color: #ffffff; /* Texto blanco */
-      padding: 40px;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
+    }
+
+    /* Animación de avenida */
+    .avenida {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    .calle {
+      position: absolute;
+      width: 100%;
+      height: 120px;
+      background: #333;
+      bottom: 0;
+    }
+    
+    .linea-central {
+      position: absolute;
+      width: 100%;
+      height: 6px;
+      background: repeating-linear-gradient(to right, yellow, yellow 30px, transparent 30px, transparent 60px);
+      bottom: 60px;
+      animation: moverLinea 2s linear infinite;
+    }
+    
+    .carro {
+      position: absolute;
+      width: 80px;
+      height: 40px;
+      bottom: 70px;
+      background: #e74c3c;
+      border-radius: 10px 10px 0 0;
+      animation: moverCarro 8s linear infinite;
+    }
+    
+    .carro:before {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      top: 5px;
+      left: 10px;
+      box-shadow: 30px 0 #fff, 0 20px #fff, 30px 20px #fff;
+    }
+    
+    .carro:nth-child(2) {
+      bottom: 150px;
+      background: #3498db;
+      animation-delay: -4s;
+      animation-duration: 10s;
+    }
+    
+    .carro:nth-child(3) {
+      bottom: 230px;
+      background: #2ecc71;
+      animation-delay: -2s;
+      animation-duration: 12s;
+    }
+    
+    @keyframes moverLinea {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-60px); }
+    }
+    
+    @keyframes moverCarro {
+      0% { transform: translateX(-100px); }
+      100% { transform: translateX(calc(100vw + 100px)); }
     }
 
     .form-container {
-      background-color: #1c1c1c;
+      background-color: rgba(135, 206, 235, 0.95);
       padding: 30px;
       border-radius: 10px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 800px;
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
     }
 
     h2 {
       text-align: center;
       margin-bottom: 20px;
-      color: #ffffff;
+      color: #003366;
     }
 
     label {
-      display: block;
       margin-top: 10px;
+      display: block;
+      color: #003366;
+      font-weight: bold;
     }
 
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"] {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      background-color: #333;
-      color: #fff;
+      background-color: #fff;
+      color: #000;
     }
 
-    input[type="submit"] {
-      margin-top: 20px;
+    button {
       width: 100%;
       padding: 10px;
-      background-color: #4CAF50;
-      color: white;
+      margin-top: 20px;
       border: none;
       border-radius: 5px;
+      background-color: #0056b3;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
     }
 
-    input[type="submit"]:hover {
-      background-color: #45a049;
+    button:hover {
+      background-color: #003e80;
+    }
+
+    #mensajeExito {
+      display: none;
+      margin-top: 20px;
+      color: green;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    #btnContinuar {
+      display: none;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #btnContinuar:hover {
+      background-color: #218838;
+    }
+
+    #formDireccion {
+      display: none;
+      width: 100%;
+    }
+
+    #btnFinalizar {
+      display: none;
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #mensajeFinal {
+      display: none;
+      margin-top: 20px;
+      color: green;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .direccion-container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .form-direccion {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .map-container {
+      flex: 1;
+      min-width: 300px;
+      height: 400px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .loading {
+      display: none;
+      color: #003366;
+      font-style: italic;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
 
-  <div class="form-container">
-    <h2>Registro de Usuario</h2>
-    <form action="/procesar_registro" method="POST">
-      <label for="nombre">Nombre(s):</label>
-      <input type="text" id="nombre" name="nombre" required>
-
-      <label for="apellido_paterno">Apellido Paterno:</label>
-      <input type="text" id="apellido_paterno" name="apellido_paterno" required>
-
-      <label for="apellido_materno">Apellido Materno:</label>
-      <input type="text" id="apellido_materno" name="apellido_materno" required>
-
-      <label for="correo">Correo Electrónico:</label>
-      <input type="email" id="correo" name="correo" required>
-
-      <label for="telefono">Número de Teléfono:</label>
-      <input type="tel" id="telefono" name="telefono" pattern="[0-9]{10}" required placeholder="10 dígitos sin espacios">
-
-      <input type="submit" value="Registrarse">
-    </form>
+  <!-- Fondo animado de avenida -->
+  <div class="avenida">
+    <div class="calle"></div>
+    <div class="linea-central"></div>
+    <div class="carro"></div>
+    <div class="carro"></div>
+    <div class="carro"></div>
   </div>
+
+  <div class="form-container">
+    <!-- Formulario de Registro Personal -->
+    <div id="formRegistroContainer">
+      <h2>Formulario de Registro</h2>
+      <form id="formRegistro">
+        <label for="nombres">Nombres:</label>
+        <input type="text" id="nombres" name="nombres" required>
+
+        <label for="apellidoP">Apellido Paterno:</label>
+        <input type="text" id="apellidoP" name="apellidoP" required>
+
+        <label for="apellidoM">Apellido Materno:</label>
+        <input type="text" id="apellidoM" name="apellidoM" required>
+
+        <label for="correo">Correo Electrónico:</label>
+        <input type="email" id="correo" name="correo" required>
+
+        <label for="telefono">Número de Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono" required pattern="[0-9]{10}" placeholder="10 dígitos">
+
+        <button type="submit">Registrarse</button>
+      </form>
+
+      <div id="mensajeExito">¡Registro exitoso!</div>
+      <button id="btnContinuar">Continuar con Dirección</button>
+    </div>
+
+    <!-- Formulario de Dirección con Mapa -->
+    <div id="formDireccion">
+      <h2>Datos de Dirección</h2>
+      <div class="direccion-container">
+        <div class="form-direccion">
+          <form id="formDireccionForm">
+            <label for="calle">Calle:</label>
+            <input type="text" id="calle" name="calle" required>
+            <div id="loading-calle" class="loading">Buscando dirección...</div>
+
+            <label for="numero">Número:</label>
+            <input type="text" id="numero" name="numero" required>
+            <div id="loading-numero" class="loading">Buscando dirección...</div>
+
+            <label for="colonia">Colonia:</label>
+            <input type="text" id="colonia" name="colonia" required>
+            <div id="loading-colonia" class="loading">Buscando dirección...</div>
+
+            <label for="municipio">Municipio:</label>
+            <input type="text" id="municipio" name="municipio" required>
+            <div id="loading-municipio" class="loading">Buscando dirección...</div>
+
+            <label for="estado">Estado:</label>
+            <select id="estado" name="estado" required>
+              <option value="">Selecciona un estado</option>
+              <option value="AGU">Aguascalientes</option>
+              <option value="BCN">Baja California</option>
+              <option value="BCS">Baja California Sur</option>
+              <option value="CAM">Campeche</option>
+              <option value="CHP">Chiapas</option>
+              <option value="CHH">Chihuahua</option>
+              <option value="COA">Coahuila</option>
+              <option value="COL">Colima</option>
+              <option value="DIF">Ciudad de México</option>
+              <option value="DUR">Durango</option>
+              <option value="GUA">Guanajuato</option>
+              <option value="GRO">Guerrero</option>
+              <option value="HID">Hidalgo</option>
+              <option value="JAL">Jalisco</option>
+              <option value="MEX">Estado de México</option>
+              <option value="MIC">Michoacán</option>
+              <option value="MOR">Morelos</option>
+              <option value="NAY">Nayarit</option>
+              <option value="NLE">Nuevo León</option>
+              <option value="OAX">Oaxaca</option>
+              <option value="PUE">Puebla</option>
+              <option value="QUE">Querétaro</option>
+              <option value="ROO">Quintana Roo</option>
+              <option value="SLP">San Luis Potosí</option>
+              <option value="SIN">Sinaloa</option>
+              <option value="SON">Sonora</option>
+              <option value="TAB">Tabasco</option>
+              <option value="TAM">Tamaulipas</option>
+              <option value="TLA">Tlaxcala</option>
+              <option value="VER">Veracruz</option>
+              <option value="YUC">Yucatán</option>
+              <option value="ZAC">Zacatecas</option>
+            </select>
+            <div id="loading-estado" class="loading">Buscando dirección...</div>
+
+            <label for="cp">Código Postal:</label>
+            <input type="text" id="cp" name="cp" required pattern="[0-9]{5}" placeholder="5 dígitos">
+            <div id="loading-cp" class="loading">Buscando dirección...</div>
+
+            <button type="submit" id="btnGuardarDireccion">Guardar Dirección</button>
+          </form>
+        </div>
+
+        <div class="map-container">
+          <div id="map"></div>
+          <div style="padding: 10px; background: rgba(255,255,255,0.8);">
+            <small>Arrastra el marcador a tu ubicación para autocompletar la dirección</small>
+          </div>
+        </div>
+      </div>
+      <div id="mensajeFinal">¡Registro completo! Gracias por tu información.</div>
+      <button id="btnFinalizar">Finalizar</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    const formRegistro = document.getElementById('formRegistro');
+    const mensajeExito = document.getElementById('mensajeExito');
+    const btnContinuar = document.getElementById('btnContinuar');
+    const formRegistroContainer = document.getElementById('formRegistroContainer');
+    const formDireccion = document.getElementById('formDireccion');
+    const formDireccionForm = document.getElementById('formDireccionForm');
+    const mensajeFinal = document.getElementById('mensajeFinal');
+    const btnFinalizar = document.getElementById('btnFinalizar');
+    const calleInput = document.getElementById('calle');
+    const numeroInput = document.getElementById('numero');
+    const coloniaInput = document.getElementById('colonia');
+    const municipioInput = document.getElementById('municipio');
+    const estadoSelect = document.getElementById('estado');
+    const cpInput = document.getElementById('cp');
+
+    // Elementos de carga
+    const loadingElements = {
+      calle: document.getElementById('loading-calle'),
+      numero: document.getElementById('loading-numero'),
+      colonia: document.getElementById('loading-colonia'),
+      municipio: document.getElementById('loading-municipio'),
+      estado: document.getElementById('loading-estado'),
+      cp: document.getElementById('loading-cp')
+    };
+
+    // Inicializar el mapa
+    let map;
+    let marker;
+
+    function initMap() {
+      // Centro inicial del mapa (Ciudad de México)
+      map = L.map('map').setView([19.4326, -99.1332], 13);
+      
+      // Añadir capa de OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Añadir marcador inicial
+      marker = L.marker([19.4326, -99.1332], {
+        draggable: true
+      }).addTo(map);
+      
+      // Mostrar mensaje de carga cuando se empieza a arrastrar
+      marker.on('dragstart', function() {
+        showLoading(true);
+      });
+      
+      // Actualizar dirección cuando se suelta el marcador
+      marker.on('dragend', function(e) {
+        const position = marker.getLatLng();
+        reverseGeocode(position.lat, position.lng);
+      });
+    }
+
+    // Función para mostrar/ocultar los mensajes de carga
+    function showLoading(show) {
+      for (const key in loadingElements) {
+        loadingElements[key].style.display = show ? 'block' : 'none';
+      }
+    }
+
+    // Geocodificación inversa usando Nominatim (API de OpenStreetMap)
+    function reverseGeocode(lat, lng) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`)
+        .then(response => response.json())
+        .then(data => {
+          const address = data.address || {};
+          
+          // Llenar los campos del formulario con los datos obtenidos
+          calleInput.value = address.road || '';
+          numeroInput.value = address.house_number || '';
+          coloniaInput.value = address.neighbourhood || address.suburb || '';
+          municipioInput.value = address.city || address.town || address.village || '';
+          
+          // Seleccionar el estado correspondiente
+          if (address.state) {
+            const estadoName = address.state.replace('Estado de ', '').replace(' Ciudad de México', '');
+            for (let i = 0; i < estadoSelect.options.length; i++) {
+              if (estadoSelect.options[i].text.includes(estadoName)) {
+                estadoSelect.selectedIndex = i;
+                break;
+              }
+            }
+          }
+          
+          cpInput.value = address.postcode || '';
+          
+          // Ocultar mensajes de carga
+          showLoading(false);
+        })
+        .catch(error => {
+          console.error('Error en geocodificación inversa:', error);
+          showLoading(false);
+          alert('No se pudo obtener la dirección. Por favor inténtalo de nuevo o completa los campos manualmente.');
+        });
+    }
+
+    // Inicializar el mapa cuando se muestra el formulario de dirección
+    btnContinuar.addEventListener('click', function() {
+      formRegistroContainer.style.display = 'none';
+      formDireccion.style.display = 'block';
+      // Esperar un momento para que el contenedor del mapa sea visible antes de inicializarlo
+      setTimeout(initMap, 100);
+    });
+
+    // Manejo del formulario de registro personal
+    formRegistro.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (formRegistro.checkValidity()) {
+        mensajeExito.style.display = 'block';
+        btnContinuar.style.display = 'block';
+        formRegistro.style.display = 'none';
+      } else {
+        alert('Por favor, completa todos los campos correctamente.');
+      }
+    });
+
+    // Manejo del formulario de dirección
+    formDireccionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (formDireccionForm.checkValidity()) {
+        formDireccionForm.style.display = 'none';
+        document.querySelector('.map-container').style.display = 'none';
+        mensajeFinal.style.display = 'block';
+        btnFinalizar.style.display = 'block';
+
+        // Recopilar todos los datos para enviar
+        const datosRegistro = {
+          nombres: document.getElementById('nombres').value,
+          apellidoP: document.getElementById('apellidoP').value,
+          apellidoM: document.getElementById('apellidoM').value,
+          correo: document.getElementById('correo').value,
+          telefono: document.getElementById('telefono').value,
+          direccion: {
+            calle: calleInput.value,
+            numero: numeroInput.value,
+            colonia: coloniaInput.value,
+            municipio: municipioInput.value,
+            estado: estadoSelect.options[estadoSelect.selectedIndex].text,
+            cp: cpInput.value,
+            coordenadas: marker.getLatLng()
+          }
+        };
+        console.log("Datos completos del registro:", datosRegistro);
+      } else {
+        alert('Por favor, completa todos los campos de dirección correctamente.');
+      }
+    });
+
+    // Botón para finalizar el proceso
+    btnFinalizar.addEventListener('click', function() {
+      alert('Proceso de registro completado con éxito. ¡Gracias!');
+      // Aquí podrías redirigir a otra página o reiniciar el formulario
+      // window.location.href = 'pagina_de_gracias.html';
+    });
+  </script>
 
 </body>
 </html>
